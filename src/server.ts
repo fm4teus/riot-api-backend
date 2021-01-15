@@ -14,7 +14,7 @@ interface invocador{
 }
 
 const app = express(); 
-const KEY = 'RGAPI-15e57ebf-a849-4cb3-9050-0d521230d633';
+const KEY = 'RGAPI-6395ee67-087e-41ec-9aed-e6ce0fb9af28';
 
 app.use(cors());
 app.use(express.json());
@@ -62,19 +62,44 @@ app.get('/:summoner',async function (req: Request, res: Response){
         { params: 
           { 
             api_key: KEY,
-            endIndex: 10
-          } });
-        const getData = async () => {
-          return Promise.all(responseMatchList.data.matches.map(async (match)=>{
-            const champion = await api.get(`champions/${match.champion}`)
-            return(
+            endIndex: 4
+          } 
+        }
+      );
+      const getData = async () => {
+        return Promise.all(responseMatchList.data.matches.map(async (match)=>{
+          const champion = await api.get(`champions/${match.champion}`)
+          const game = await riotApi.get(
+            `match/v4/matches/${match.gameId}`,
+            { params:
               {
-                championCode: match.champion,
-                lane: match.lane,
-                championName: champion.data.id
+                api_key: KEY,
               }
-            )
-          }))
+            }
+          );
+          const [player] = game.data.participantIdentities.filter((participant)=>(
+            participant.player.accountId == userInfo.accountId
+          ))
+          const participants = game.data.participants
+          const [participant] = game.data.participants.filter((part)=>(
+            part.participantId == player.participantId
+          ))
+          const win = participant.stats.win
+          return(
+            {
+              championCode: match.champion,
+              lane: match.lane,
+              queue: match.queue,
+              gameId: match.gameId,
+              championId: champion.data.id,
+              championName: champion.data.name,
+              gameMode: game.data.gameMode,
+              player: player,
+              //participant: participant,
+              win: win
+            }
+          )
+        }))
         }
         getData().then(
           data=>{
