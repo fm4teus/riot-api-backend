@@ -14,7 +14,7 @@ interface invocador{
 }
 
 const app = express(); 
-const KEY = 'RGAPI-6395ee67-087e-41ec-9aed-e6ce0fb9af28';
+const KEY = '';
 
 app.use(cors());
 app.use(express.json());
